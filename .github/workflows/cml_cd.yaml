@@ -1,0 +1,52 @@
+name: CML CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      CLUSTER: ${{ secrets.GKE_CLUSTER_NAME }}
+      REGION: ${{ secrets.GCP_REGION }}
+      IMAGE_NAME: iris-fastapi-app
+
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v3
+
+    - name: Authenticate GCP
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Set up GCP SDK
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        project_id: ${{ env.PROJECT_ID }}
+        install_components: 'gke-gcloud-auth-plugin'
+
+    - name: Configure Docker to use GCR
+      run: |
+        gcloud auth configure-docker
+
+    - name: Build Docker Image
+      run: |
+        docker build -t gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }} .
+
+    - name: Push Docker Image to GCR
+      run: |
+        docker push gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }}
+
+    - name: Connect to GKE Cluster
+      run: |
+        gcloud container clusters get-credentials $CLUSTER --region $REGION
+
+    - name: Deploy to GKE
+      run: |
+        kubectl apply -f deployment.yaml
+        kubectl apply -f service.yaml
+

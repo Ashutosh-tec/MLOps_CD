@@ -1,0 +1,47 @@
+   42  docker build -t iris-fastapi-app .
+   43  sudo groupadd docker
+   45  sudo usermod -aG docker $USER
+   46  newgrp docker
+   47  docker build -t iris-fastapi-app .
+   49  mv Docker dockerfile
+   50  docker build -t iris-fastapi-app .
+   51  docker run -d -p 8000:8000 iris-fastapi-app
+   53  docker ps
+   54  docker logs d9581d835a18
+   55  docker logs -f iris-fastapi-app
+   56  docker logs d9581d835a18
+   57  docker stop d9581d835a18
+   61  docker ps
+   62  docker ps -a
+   63  docker run -d -p 8000:8000 iris-fastapi-app
+   64  docker ps
+   66  vim .github/workflows/cml_cd.yaml
+   67  cat .github/workflows/cml_cd.yaml
+   68  touch .github/workflows/cml_cd.yaml
+   73  vim .github/workflows/cml_cd.yaml
+   75  kubectl apply -f k8s-deployment.yaml 
+   76  gcloud config set project formidable-bus-465107-j2
+   77  gcloud container clusters list
+   78  docker ps
+   79  gcloud container clusters get-credentials iris-fastapi-app --zone us-central1-a
+   80  gcloud container clusters list
+   81  gcloud container clusters get-credentials iris-fastapi-app --zone us-central1-a
+   82  gcloud container clusters create-auto iris-cluster     --region=us-central1     --project=formidable-bus-465107-j2
+   84  gcloud container clusters create-auto iris-cluster     --region=us-central1     --project=formidable-bus-465107-j2
+   85  docker tag iris-fastapi-app gcr.io/formidable-bus-465107-j2/iris-fastapi-app
+   86  docker push gcr.io/formidable-bus-465107-j2/iris-fastapi-app
+   87  gcloud container clusters get-credentials iris-cluster --zone us-central1   
+   88  gcloud container clusters get-credentials iris-cluster --zone us-central1-a
+   89  gcloud container clusters list
+   90  gcloud container clusters get-credentials iris-cluster --zone us-central1
+   93  kubectl apply -f deployment.yaml
+   94  gcloud components install gke-gcloud-auth-plugin
+   95  sudo apt-get install google-cloud-cli-gke-gcloud-auth-plugin
+   96  gcloud container clusters get-credentials iris-cluster --zone us-central1
+   97  kubectl apply -f deployment.yaml
+   98  kubectl apply -f service.yaml
+   99  kubectl get services
+  100  pip install cml
+  101  npm install -g @dvcorg/cml
+  102  cml --version
+  109  history | grep -E 'docker|gcloud|kubectl|curl|cml' > commands.txt
