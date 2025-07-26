@@ -1,55 +1,45 @@
-name: CML CI/CD Pipeline
+name: CML CD Workflow
 
 on:
   push:
-    branches: [main, dev]
+    branches: [dev]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    env:
-      PROJECT_ID: formidable-bus-465107-j2
-      CLUSTER: iris-cluster
-      REGION: us-central1
-      IMAGE_NAME: iris-fastapi-app
-
     steps:
-    - name: Checkout Repo
+    - name: Checkout Code
       uses: actions/checkout@v3
 
-    - name: Set up gcloud CLI
-      uses: google-github-actions/setup-gcloud@v2
+    - name: Set up Python
+      uses: actions/setup-python@v4
       with:
-        project_id: formidable-bus-465107-j2
-        service_account_key: ${{ secrets.GCP_SA_KEY }}
-        export_default_credentials: true
+        python-version: '3.10'
 
-    - name: Authenticate with base64-encoded JSON key
+    - name: Install Dependencies
       run: |
-        echo '${{ env.GCP_SA_JSON }}' > ${HOME}/gcloud-key.json
-        gcloud auth activate-service-account --key-file=${HOME}/gcloud-key.json
-        gcloud config set project $PROJECT_ID
+        pip install -r requirements.txt
 
-    - name: Configure Docker for GCR
+    - name: Write GCP SA Key to file
       run: |
-        gcloud auth configure-docker
+        echo "${{ secrets.GCP_SA_KEY }}" > $HOME/gcloud-key.json
+
+    - name: Authenticate with GCP
+      run: |
+        gcloud auth activate-service-account --key-file=$HOME/gcloud-key.json
+        gcloud config set project formidable-bus-465107-j2  # <- Replace this
+        gcloud config set compute/zone us-central1  # Or your preferred zone
+        gcloud container clusters get-credentials iris-cluster  # <- Replace this
 
     - name: Build Docker image
       run: |
-        docker build -t gcr.io/$PROJECT_ID/$IMAGE_NAME .
+        docker build -t gcr.io/formidable-bus-465107-j2/iris-api:latest .  # <- Replace
 
-    - name: Push Docker image to GCR
+    - name: Push Docker image
       run: |
-        docker push gcr.io/$PROJECT_ID/$IMAGE_NAME
-
-    - name: Connect to GKE
-      run: |
-        gcloud container clusters get-credentials $CLUSTER --region $REGION
-
-    - name: Replace project ID in deployment YAML
-      run: |
-        sed -i "s|gcr.io/.*/iris-fastapi-app|gcr.io/$PROJECT_ID/$IMAGE_NAME|g" deployment.yaml
+        gcloud auth configure-docker
+        docker push gcr.io/formidable-bus-465107-j2/iris-api:latest
 
     - name: Deploy to GKE
       run: |
