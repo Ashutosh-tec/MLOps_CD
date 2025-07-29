@@ -1,20 +1,42 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: iris-deployment
+  name: demo-log-ml-service
+  labels:
+    app: demo-log-ml-service
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      app: iris-app
+      app: demo-log-ml-service
   template:
     metadata:
       labels:
-        app: iris-app
+        app: demo-log-ml-service
     spec:
+      serviceAccountName: telemetry-access  # Replace with existing SA or remove if not using
       containers:
-      - name: iris-container
-        image: gcr.io/formidable-bus-465107-j2/iris-fastapi-app
+      - name: fastapi-container
+        image: us-central1-docker.pkg.dev/formidable-bus-465107-j2/my-repo/iris-pipeline:latest
         ports:
-        - containerPort: 8000
+        - containerPort: 8200
+        readinessProbe:
+          httpGet:
+            path: /ready_check
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /live_check
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
 
