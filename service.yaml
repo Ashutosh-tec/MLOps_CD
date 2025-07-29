@@ -1,13 +1,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: iris-service
+  name: demo-log-ml-service
+  labels:
+    app: demo-log-ml-service
 spec:
   type: LoadBalancer
   selector:
-    app: iris-app
+    app: demo-log-ml-service
   ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 8000
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
 
